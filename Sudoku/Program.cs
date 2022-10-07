@@ -1,17 +1,16 @@
 ﻿
 
 Sudoku game1 = new Sudoku ();
+game1.printPuzzle();
 
 
 class Sudoku
 {
-    int[,] puzzle = new int[8, 8];  //9*9 square
-    int[] position = new int[2];    //the location of number in the grid array  [0] row, [1] column
-    int[] blackList = new int[8];
+    int[,] puzzle = new int[9, 9];  //9*9 square
+    int rowPos = 0, colPos = 0; //these are the co-ordinates. changed to two integers for readability in the code
     public Sudoku()
     {
         Randomise();
-    
     }
     
     public void Randomise()     //this will randomise the order of numbers in the sudoku board
@@ -19,34 +18,48 @@ class Sudoku
         Random r1 = new Random();
         for (int i = 0; i < 9; i++)  //row
         {
+            int[] blackList = new int[9];   //this is the numbers that cant be reused, cleared when it changes row
             for(int j = 0; j < 9; j++)  //column
             {
-                position[0] = i;    //row
-                position[1] = j;    //column
+                rowPos = i;    //row
+                colPos = j;    //column
 
-               
-               int temp = r1.Next(1,10);
-                
-               while(NotRepeat(temp) == false) //the number is a repeat, get a new random
+                int num = r1.Next(1,10);
+              
+
+                while (!NotRepeat(num)) //the number is a repeat, get a new random
                 {
-                    temp = r1.Next(1, 10);
+                    blackList[i] = num;
+                    while(!BlackCheck(ref blackList, num))  //check for a black list, get a new number if it is.
+                    {
+                        num = r1.Next(1, 10);
+                    }
 
                 }
-                puzzle[position[0], position[1]] = temp;    //number has passed checks, assign to puzzle
                 
+                puzzle[rowPos, colPos] = num;//number has passed checks, assign to puzzle
+                //blackList[i] = num;
             }
-
         }
+    }
 
+    public bool BlackCheck(ref int[] bL, int num)
+    {
+        int matchedNum = 0;
+        matchedNum = Array.Find(bL, element => element == num);
+
+        if (matchedNum == num) return false;    //the number is in the black list, find a new number
+
+        return true;
     }
 
     public bool RowCheck(int num) //8 c1,r1
     {
-       if (position[1] == 0) { return true; }   //just started, row doesnt need checking as its empty
+       if (colPos == 0) { return true; }   //just started, row doesnt need checking as its empty
 
-       for(int i = 0; i < position[1]; i++)
+       for(int i = 0; i < colPos; i++)
         {
-            if(num == puzzle[position[0],i]){ return false; }
+            if(num == puzzle[rowPos,i]){ return false; }
         }
 
         return true;
@@ -54,42 +67,46 @@ class Sudoku
 
     public bool ColCheck(int num)
     {
-        if (position[0] == 0) { return true; }  //its at the top of the column, therefore its empty
+        if (rowPos == 0) { return true; }  //its at the top of the column, therefore its empty
 
-        for (int i = 0; i < position[0]; i++)
+        for (int i = 0; i < rowPos; i++)
         {
-            if(num == puzzle[i, position[1]]) { return false; }
+            if(num == puzzle[i, colPos]) { return false; }
         }
         return true;
     }
 
     public bool BoxCheck(int num)   //find its box index first
     {
-        int[] row = new int[] {  0, 1, 2 ,  0, 1, 2 ,  0, 1, 2  };  //the index for the row takes the number and checks that many boxes left
-        bool skipFirst = false;
+        //int[] move = new int[] {  0, 1, 2 ,  0, 1, 2 ,  0, 1, 2  };  //takes index checks that many boxes on left side
+        bool[] moveB = new bool[] { false, true, true, false, true, true, false, true, true };
 
-        for (int i = row[position[1]]; i > -1; i--) //column decrease
+        int rP = rowPos;
+        int cP = colPos;
+
+        while (moveB[rP] || moveB[cP]) 
         {
-            if (!skipFirst) //this takes the index of the current position.
+            if (!moveB[cP]) //change the column position to the top right box on the next row
             { 
-                for (int j = row[position[0]]; j > -1; j--) //row decrease
-                {
-                    if(num == puzzle[(position[0] - j), (position[1]-i)]) return false; 
-                    if (i == 0 && j == 0) { return true; }
-                } 
+                cP += 2;
+                rP--;
+                if (num == puzzle[rP, cP]) return false;    //does a double check, the box moved to and the one to the left as they will both need checking
+                else if(num == puzzle[rP, cP-1]) return false;
+                cP--;  //check done, not a repeat, move the column over to the left
             }
-            if (skipFirst)  //this now moves up a row and goes into the third index of the row
+
+            if (!moveB[rP])
             {
-                for (int j = 2; j > -1; j--)
-                {
-                    if (num == puzzle[(position[0] - j), (position[1] - i)]) return false;  //this has an array out of range error
-                    if (i == 0 && j == 0) { return true; } //no matches in the box area
-                }
+                if (num == puzzle[rP, cP-1]) return false;
+                cP--;
+            }
+            if (moveB[rP] && moveB[cP])
+            {
+                if (num == puzzle[rP, cP-1]) return false;
+                cP--;
             }
 
-            skipFirst = true;
         }
-
         return true; 
     }
 
@@ -100,4 +117,23 @@ class Sudoku
         if (!BoxCheck(num)) return false;
         return true;
     }
+
+    //public bool blackList(int num)
+    //{
+
+    //    return true;
+    //}
+
+    public void printPuzzle()
+    {
+        for(int i = 0; i < puzzle.GetLength(0); i++)
+        {
+            for(int j = 0; j < puzzle.GetLength(1); j++)
+            {
+                Console.WriteLine("{0}", puzzle[i, j]);
+            }
+          
+        }  
+    }
+
 }

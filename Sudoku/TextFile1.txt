@@ -1,5 +1,18 @@
 ﻿Sudoku app
 
+Updates:
+still on version 1, done some work on getting the algorithm to create a game working. the algorithm works correctly but the finding a non repeat number uses too much memory.
+The process of checking each number as it gets further into the random number generation takes longer and longer, so the program seems to never finish
+As it stands, it needs some more work on the random number generation to eliminate repeat numbers. For now i have tried creating a simple function to check an array of numbers which have been used that line
+
+The main issue is all centreed around the big O notation for generating a game. its currently too large
+
+More work to come but been a busy week, not enough time to fully flesh out and find all the bugs.
+
+
+
+
+
 Rules for sudoku:
 *Game is filled with numbers from 1 - 9
 *Square is made up of single cells in a 9*9 format
